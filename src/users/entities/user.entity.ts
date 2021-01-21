@@ -19,6 +19,7 @@ import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
 import { Review } from 'src/podcast/entities/review.entity';
 import { Podcast } from 'src/podcast/entities/podcast.entity';
+import { Episode } from 'src/podcast/entities/episode.entity';
 
 export enum UserRole {
   Host = 'Host',
@@ -53,6 +54,11 @@ export class User extends CoreEntity {
   @JoinTable()
   @Field((type) => [Podcast], { nullable: true })
   subscriptions?: Podcast[];
+
+  @ManyToMany((type) => Episode)
+  @JoinTable()
+  @Field((type) => [Episode], { nullable: true })
+  markedEpisodes?: Episode[];
 
   @BeforeInsert()
   @BeforeUpdate()

@@ -67,6 +67,53 @@ export class PodcastsResolver {
   ): Promise<CoreOutput> {
     return this.podcastsService.updatePodcast(updatePodcastInput);
   }
+
+  @Query((returns) => SearchPodcastOutput)
+  @Role(['Listener'])
+  searchPodcasts(
+    @Args('input') searchPodcastInput: SearchPodcastInput
+  ): Promise<SearchPodcastOutput> {
+    return this.podcastsService.searchPodcasts(searchPodcastInput);
+  }
+
+  @Mutation((returns) => CoreOutput)
+  @Role(['Listener'])
+  reviewPodcast(
+    @AuthUser() user: User,
+    @Args('input') reviewPodcastInput: ReviewPodcastInput
+  ): Promise<CoreOutput> {
+    return this.podcastsService.reviewPodcast(user, reviewPodcastInput);
+  }
+
+  @Mutation((returns) => CoreOutput)
+  @Role(['Listener'])
+  subscribeToPodcast(
+    @AuthUser() user: User,
+    @Args('input') subscribeToPodcastInput: SubscribeToPodcastInput
+  ): Promise<CoreOutput> {
+    return this.podcastsService.subscribeToPodcast(
+      user,
+      subscribeToPodcastInput
+    );
+  }
+
+  @Mutation((returns) => CoreOutput)
+  @Role(['Listener'])
+  unSubscribeToPodcast(
+    @AuthUser() user: User,
+    @Args('input') subscribeToPodcastInput: SubscribeToPodcastInput
+  ): Promise<CoreOutput> {
+    return this.podcastsService.unSubscribeToPodcast(
+      user,
+      subscribeToPodcastInput
+    );
+  }
+
+  @Query((returns) => [Podcast])
+  @Role(['Listener'])
+  seeSubscriptions(@AuthUser() user: User): Podcast[] {
+    return user.subscriptions;
+  }
 }
 
 @Resolver((of) => Episode)
@@ -104,50 +151,11 @@ export class EpisodeResolver {
     return this.podcastService.deleteEpisode(episodesSearchInput);
   }
 
-  @Query((returns) => SearchPodcastOutput)
-  @Role(['Listener'])
-  searchPodcasts(
-    @Args('input') searchPodcastInput: SearchPodcastInput
-  ): Promise<SearchPodcastOutput> {
-    return this.podcastService.searchPodcasts(searchPodcastInput);
-  }
-
   @Mutation((returns) => CoreOutput)
-  @Role(['Listener'])
-  reviewPodcast(
+  markEpisodeAsPlayed(
     @AuthUser() user: User,
-    @Args('input') reviewPodcastInput: ReviewPodcastInput
+    @Args('episodeId') episodeId: number
   ): Promise<CoreOutput> {
-    return this.podcastService.reviewPodcast(user, reviewPodcastInput);
-  }
-
-  @Mutation((returns) => CoreOutput)
-  @Role(['Listener'])
-  subscribeToPodcast(
-    @AuthUser() user: User,
-    @Args('input') subscribeToPodcastInput: SubscribeToPodcastInput
-  ): Promise<CoreOutput> {
-    return this.podcastService.subscribeToPodcast(
-      user,
-      subscribeToPodcastInput
-    );
-  }
-
-  @Mutation((returns) => CoreOutput)
-  @Role(['Listener'])
-  unSubscribeToPodcast(
-    @AuthUser() user: User,
-    @Args('input') subscribeToPodcastInput: SubscribeToPodcastInput
-  ): Promise<CoreOutput> {
-    return this.podcastService.unSubscribeToPodcast(
-      user,
-      subscribeToPodcastInput
-    );
-  }
-
-  @Query((returns) => [Podcast])
-  @Role(['Listener'])
-  seeSubscriptions(@AuthUser() user: User): Podcast[] {
-    return user.subscriptions;
+    return this.podcastService.markEpisodeAsPlayed(user, episodeId);
   }
 }

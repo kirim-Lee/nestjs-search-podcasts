@@ -305,4 +305,23 @@ export class PodcastsService {
       return this.InternalServerErrorOutput;
     }
   }
+
+  async markEpisodeAsPlayed(
+    user: User,
+    episodeId: number
+  ): Promise<CoreOutput> {
+    try {
+      const episode = await this.episodeRepository.findOne({ id: episodeId });
+      if (!episode) {
+        return { ok: false, error: 'episode is not exist' };
+      }
+      await this.userRepository.save({
+        ...user,
+        markedEpisodes: (user.markedEpisodes || []).concat(episode),
+      });
+      return { ok: true };
+    } catch (e) {
+      return this.InternalServerErrorOutput;
+    }
+  }
 }

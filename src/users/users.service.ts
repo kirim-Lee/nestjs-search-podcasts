@@ -82,7 +82,7 @@ export class UsersService {
     try {
       const user = await this.users.findOneOrFail(
         { id },
-        { relations: ['subscriptions'] }
+        { relations: ['subscriptions', 'markedEpisodes'] }
       );
       return {
         ok: true,
