@@ -26,6 +26,8 @@ import { Like, Raw, Repository } from 'typeorm';
 import { ReviewPodcastInput } from './dtos/review-podcast.dto';
 import { User } from 'src/users/entities/user.entity';
 import { Review } from './entities/review.entity';
+import { SubscribeToPodcastInput } from './dtos/subscribe-podcast.dto';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class PodcastsService {
@@ -35,7 +37,9 @@ export class PodcastsService {
     @InjectRepository(Episode)
     private readonly episodeRepository: Repository<Episode>,
     @InjectRepository(Review)
-    private readonly reviewRepository: Repository<Review>
+    private readonly reviewRepository: Repository<Review>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>
   ) {}
 
   private readonly InternalServerErrorOutput = {
@@ -148,6 +152,43 @@ export class PodcastsService {
         ok: true,
         podcasts,
       };
+    } catch (e) {
+      return this.InternalServerErrorOutput;
+    }
+  }
+
+  async subscribeToPodcast(
+    user: User,
+    { podcastId }: SubscribeToPodcastInput
+  ): Promise<CoreOutput> {
+    try {
+      const { ok, error, podcast } = await this.getPodcast(podcastId);
+      if (!ok) {
+        return { ok, error };
+      }
+
+      await this.userRepository.save({
+        ...user,
+        subscriptions: (user.subscriptions || []).concat(podcast),
+      });
+      return { ok: true };
+    } catch (e) {
+      return this.InternalServerErrorOutput;
+    }
+  }
+
+  async unSubscribeToPodcast(
+    user: User,
+    { podcastId }: SubscribeToPodcastInput
+  ): Promise<CoreOutput> {
+    try {
+      await this.userRepository.save({
+        ...user,
+        subscriptions: (user.subscriptions || []).filter(
+          (subsPodcast) => subsPodcast.id !== podcastId
+        ),
+      });
+      return { ok: true };
     } catch (e) {
       return this.InternalServerErrorOutput;
     }

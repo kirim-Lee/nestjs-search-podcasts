@@ -16,7 +16,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly users: Repository<User>,
-    private readonly jwtService: JwtService,
+    private readonly jwtService: JwtService
   ) {}
 
   async createAccount({
@@ -51,7 +51,7 @@ export class UsersService {
     try {
       const user = await this.users.findOne(
         { email },
-        { select: ['id', 'password'] },
+        { select: ['id', 'password'] }
       );
       if (!user) {
         return { ok: false, error: 'User not found' };
@@ -80,7 +80,10 @@ export class UsersService {
 
   async findById(id: number): Promise<UserProfileOutput> {
     try {
-      const user = await this.users.findOneOrFail({ id });
+      const user = await this.users.findOneOrFail(
+        { id },
+        { relations: ['subscriptions'] }
+      );
       return {
         ok: true,
         user,
@@ -95,7 +98,7 @@ export class UsersService {
 
   async editProfile(
     userId: number,
-    { email, password }: EditProfileInput,
+    { email, password }: EditProfileInput
   ): Promise<EditProfileOutput> {
     try {
       const user = await this.users.findOneOrFail(userId);

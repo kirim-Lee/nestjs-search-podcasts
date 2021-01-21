@@ -26,6 +26,7 @@ import { Role } from 'src/auth/role.decorator';
 import { ReviewPodcastInput } from './dtos/review-podcast.dto';
 import { AuthUser } from 'src/auth/auth-user.decorator';
 import { User } from 'src/users/entities/user.entity';
+import { SubscribeToPodcastInput } from './dtos/subscribe-podcast.dto';
 
 @Resolver((of) => Podcast)
 export class PodcastsResolver {
@@ -118,5 +119,29 @@ export class EpisodeResolver {
     @Args('input') reviewPodcastInput: ReviewPodcastInput
   ): Promise<CoreOutput> {
     return this.podcastService.reviewPodcast(user, reviewPodcastInput);
+  }
+
+  @Mutation((returns) => CoreOutput)
+  @Role(['Listener'])
+  subscribeToPodcast(
+    @AuthUser() user: User,
+    @Args('input') subscribeToPodcastInput: SubscribeToPodcastInput
+  ): Promise<CoreOutput> {
+    return this.podcastService.subscribeToPodcast(
+      user,
+      subscribeToPodcastInput
+    );
+  }
+
+  @Mutation((returns) => CoreOutput)
+  @Role(['Listener'])
+  unSubscribeToPodcast(
+    @AuthUser() user: User,
+    @Args('input') subscribeToPodcastInput: SubscribeToPodcastInput
+  ): Promise<CoreOutput> {
+    return this.podcastService.unSubscribeToPodcast(
+      user,
+      subscribeToPodcastInput
+    );
   }
 }
