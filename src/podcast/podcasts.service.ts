@@ -18,9 +18,11 @@ import {
   EpisodesSearchInput,
   GetAllPodcastsOutput,
   GetEpisodeOutput,
+  SearchPodcastInput,
+  SearchPodcastOutput,
 } from './dtos/podcast.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Raw, Repository } from 'typeorm';
 
 @Injectable()
 export class PodcastsService {
@@ -28,7 +30,7 @@ export class PodcastsService {
     @InjectRepository(Podcast)
     private readonly podcastRepository: Repository<Podcast>,
     @InjectRepository(Episode)
-    private readonly episodeRepository: Repository<Episode>,
+    private readonly episodeRepository: Repository<Episode>
   ) {}
 
   private readonly InternalServerErrorOutput = {
@@ -68,7 +70,7 @@ export class PodcastsService {
     try {
       const podcast = await this.podcastRepository.findOne(
         { id },
-        { relations: ['episodes'] },
+        { relations: ['episodes'] }
       );
       if (!podcast) {
         return {
@@ -126,6 +128,25 @@ export class PodcastsService {
     }
   }
 
+  async searchPodcasts({
+    keyword,
+  }: SearchPodcastInput): Promise<SearchPodcastOutput> {
+    try {
+      const podcasts = await this.podcastRepository.find({
+        where: {
+          title: Like(`%${keyword}%`),
+        },
+      });
+
+      return {
+        ok: true,
+        podcasts,
+      };
+    } catch (e) {
+      return this.InternalServerErrorOutput;
+    }
+  }
+
   async getEpisodes(podcastId: number): Promise<EpisodesOutput> {
     const { podcast, ok, error } = await this.getPodcast(podcastId);
     if (!ok) {
@@ -145,7 +166,7 @@ export class PodcastsService {
     if (!ok) {
       return { ok, error };
     }
-    const episode = episodes.find(episode => episode.id === episodeId);
+    const episode = episodes.find((episode) => episode.id === episodeId);
     if (!episode) {
       return {
         ok: false,
