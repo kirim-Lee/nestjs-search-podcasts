@@ -144,4 +144,10 @@ export class EpisodeResolver {
       subscribeToPodcastInput
     );
   }
+
+  @Query((returns) => [Podcast])
+  @Role(['Listener'])
+  seeSubscriptions(@AuthUser() user: User): Podcast[] {
+    return user.subscriptions;
+  }
 }
