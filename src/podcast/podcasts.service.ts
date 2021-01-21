@@ -23,6 +23,9 @@ import {
 } from './dtos/podcast.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Raw, Repository } from 'typeorm';
+import { ReviewPodcastInput } from './dtos/review-podcast.dto';
+import { User } from 'src/users/entities/user.entity';
+import { Review } from './entities/review.entity';
 
 @Injectable()
 export class PodcastsService {
@@ -30,7 +33,9 @@ export class PodcastsService {
     @InjectRepository(Podcast)
     private readonly podcastRepository: Repository<Podcast>,
     @InjectRepository(Episode)
-    private readonly episodeRepository: Repository<Episode>
+    private readonly episodeRepository: Repository<Episode>,
+    @InjectRepository(Review)
+    private readonly reviewRepository: Repository<Review>
   ) {}
 
   private readonly InternalServerErrorOutput = {
@@ -70,7 +75,7 @@ export class PodcastsService {
     try {
       const podcast = await this.podcastRepository.findOne(
         { id },
-        { relations: ['episodes'] }
+        { relations: ['episodes', 'reviews'] }
       );
       if (!podcast) {
         return {
@@ -136,12 +141,31 @@ export class PodcastsService {
         where: {
           title: Like(`%${keyword}%`),
         },
+        relations: ['episodes', 'reviews'],
       });
 
       return {
         ok: true,
         podcasts,
       };
+    } catch (e) {
+      return this.InternalServerErrorOutput;
+    }
+  }
+
+  async reviewPodcast(
+    user: User,
+    { podcastId, post }: ReviewPodcastInput
+  ): Promise<CoreOutput> {
+    try {
+      const { podcast, ok, error } = await this.getPodcast(podcastId);
+      if (!ok) {
+        return { ok, error };
+      }
+      await this.reviewRepository.save(
+        this.reviewRepository.create({ podcast, user, post })
+      );
+      return { ok: true };
     } catch (e) {
       return this.InternalServerErrorOutput;
     }

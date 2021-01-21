@@ -23,6 +23,9 @@ import {
 } from './dtos/create-episode.dto';
 import { UpdateEpisodeInput } from './dtos/update-episode.dto';
 import { Role } from 'src/auth/role.decorator';
+import { ReviewPodcastInput } from './dtos/review-podcast.dto';
+import { AuthUser } from 'src/auth/auth-user.decorator';
+import { User } from 'src/users/entities/user.entity';
 
 @Resolver((of) => Podcast)
 export class PodcastsResolver {
@@ -106,5 +109,14 @@ export class EpisodeResolver {
     @Args('input') searchPodcastInput: SearchPodcastInput
   ): Promise<SearchPodcastOutput> {
     return this.podcastService.searchPodcasts(searchPodcastInput);
+  }
+
+  @Mutation((returns) => CoreOutput)
+  @Role(['Listener'])
+  reviewPodcast(
+    @AuthUser() user: User,
+    @Args('input') reviewPodcastInput: ReviewPodcastInput
+  ): Promise<CoreOutput> {
+    return this.podcastService.reviewPodcast(user, reviewPodcastInput);
   }
 }
